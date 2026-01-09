@@ -538,12 +538,16 @@ def coordinator_node(
     if not enable_clarification:
         # Use normal prompt with explicit instruction to skip clarification
         messages = apply_prompt_template("coordinator", state, locale=state.get("locale", "en-US"))
-        messages.append(
-            {
-                "role": "system",
-                "content": "Clarification is DISABLED. For research questions, use handoff_to_planner. For greetings or small talk, use direct_response. Do NOT ask clarifying questions.",
-            }
-        )
+        # messages.append(
+        #     {
+        #         "role": "system",
+        #         "content": "Clarification is DISABLED. For research questions, use handoff_to_planner. For greetings or small talk, use direct_response. Do NOT ask clarifying questions.",
+        #     }
+        # )
+
+        # 合并到第一条 system 消息，避免多条 system 消息
+        if messages and messages[0].get("role") == "system":    
+            messages[0]["content"] += "\n\n## Additional Instructions\nClarification is DISABLED. For research questions, use handoff_to_planner. For greetings or small talk, use direct_response. Do NOT ask clarifying questions."
 
         # Bind both handoff_to_planner and direct_response tools
         tools = [handoff_to_planner, direct_response]
